@@ -92,6 +92,26 @@ export default function HostedZoneDetailPage() {
     fetchRecords();
   }, [fetchZone, fetchRecords]);
 
+  // Global 'c' keyboard shortcut to create DNS record
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault();
+        setCreateModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Extract NS records to show in summary
   const nsRecord = records.find((r) => r.type === "NS" && r.is_system);
 

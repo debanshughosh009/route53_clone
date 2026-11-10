@@ -4,6 +4,7 @@ import "./globals.css";
 import React, { useState, useEffect } from "react";
 import { TopNav } from "@/components/layout/TopNav";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { KeyboardShortcutsModal } from "@/components/layout/KeyboardShortcutsModal";
 
 export default function RootLayout({
   children,
@@ -49,6 +50,7 @@ export default function RootLayout({
             {children}
           </main>
         </div>
+        <KeyboardShortcutsModal />
       </body>
     </html>
   );

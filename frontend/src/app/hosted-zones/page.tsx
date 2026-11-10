@@ -50,6 +50,26 @@ export default function HostedZonesPage() {
     fetchZones();
   }, [fetchZones]);
 
+  // Global 'c' keyboard shortcut to create hosted zone
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault();
+        setCreateModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Handle Search input
   const handleSearchChange = (val: string) => {
     setSearch(val);
