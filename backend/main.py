@@ -1,5 +1,6 @@
 """FastAPI application entry point for the AWS Route 53 Clone backend."""
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -27,10 +28,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS – allow the Next.js frontend dev server
+# CORS – keep local development working and allow the deployed frontend via
+# a comma-separated CORS_ORIGINS environment variable.
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

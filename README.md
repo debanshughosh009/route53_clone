@@ -225,3 +225,29 @@ To run the backend integration test suite:
 cd backend
 python test_direct.py
 ```
+
+## Deployment
+
+### Backend on Render
+
+1. Create a new Render Blueprint from this repository and select `render.yaml`.
+2. Set `CORS_ORIGINS` to the Vercel deployment URL (for example,
+   `https://route53-clone.vercel.app`). Use a comma-separated list if multiple
+   frontend URLs need access.
+3. Render will build from `backend/`, expose `/api/health`, and start FastAPI
+   on Render's assigned port.
+
+The current backend stores data in SQLite. Render's local filesystem is
+ephemeral, so this deployment is suitable for a demo; use a persistent
+database before production.
+
+### Frontend on Vercel
+
+1. Import this repository into Vercel.
+2. Set the project root directory to `frontend`.
+3. Add `NEXT_PUBLIC_API_URL` with the deployed Render API URL, without a
+   trailing slash (for example, `https://route53-clone-api.onrender.com`).
+4. Deploy with the default Next.js build settings.
+
+Every push and pull request also runs the checks in
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
