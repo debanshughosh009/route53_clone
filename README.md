@@ -1,253 +1,189 @@
-# AWS Route 53 Clone
+# Route 53 Clone
 
-A full-stack, functional clone of the **Amazon Route 53** web application and DNS management console built with **Next.js (TypeScript)**, **FastAPI (Python)**, and **SQLite**.
+A full-stack, open-source recreation of the Amazon Route 53 console for learning, prototyping, and local development. The project provides an AWS-inspired interface for managing hosted zones and DNS records through a Next.js frontend and a FastAPI backend.
 
-The project closely mirrors the authentic AWS Console and Route 53 user experience, workflows, typography, and CloudScape design aesthetics.
+> **Live demo:** [route53clonefrontend.vercel.app](https://route53clonefrontend.vercel.app/)
 
----
+This is an educational clone, not an AWS product or a replacement for Route 53.
 
-## Architecture Overview
+## Highlights
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Next.js Frontend (TS)                           │
-│  - AWS Console TopNav (Global search, Account Switcher, Dark Mode)     │
-│  - Route 53 Collapsible Sidebar Navigation                             │
-│  - Hosted Zones Console (CRUD, search, filters, CloudScape table)      │
-│  - DNS Records Console (Quick Create wizard, A/AAAA/CNAME/MX/TXT/etc.) │
-│  - BIND Zone File Import & Export (.zone / RFC 1035 format)            │
-│  - Bulk Operations, Modals, Flash Alert Notifications                  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ REST API
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                          FastAPI Backend                               │
-│  - /api/auth: Mocked IAM authentication and session persistence        │
-│  - /api/hosted-zones: Full CRUD, auto-provisioned NS and SOA records   │
-│  - /api/hosted-zones/{id}/records: Record sets CRUD & bulk operations  │
-│  - /api/hosted-zones/{id}/export & /import: RFC 1035 BIND zone files   │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ SQLAlchemy ORM
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                         SQLite Database                                │
-│  - users & active sessions                                             │
-│  - hosted_zones (Route 53 ID format: Z0A1B2C3D4E5F6)                   │
-│  - dns_records (A, AAAA, CNAME, TXT, MX, NS, PTR, SRV, CAA, SOA)       │
-└────────────────────────────────────────────────────────────────────────┘
-```
+- AWS Console-inspired navigation, layout, responsive tables, alerts, modals, and dark mode
+- Hosted zone creation, search, editing, deletion, and public/private zone support
+- Automatic NS and SOA record provisioning for new zones
+- DNS record management for `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `NS`, `PTR`, `SRV`, `CAA`, and `SOA`
+- Simple, weighted, latency, and failover routing policy selections
+- BIND zone-file import and BIND/JSON export
+- Bulk record deletion and protected system records
+- Mocked sections for health checks, resolver, traffic policies, profiles, and dashboard views
+- Interactive OpenAPI documentation through FastAPI
 
----
+## Important limitations
 
-## Features
+This project does **not** connect to AWS or any real DNS provider.
 
-### 1. Hosted Zones Management
-- **Full CRUD functionality**: View, search, create, edit, and delete hosted zones.
-- **Route 53 ID formatting**: Auto-generated zone IDs matching AWS format (`Z` followed by alphanumeric uppercase characters).
-- **Auto-Provisioned System Records**: Every new zone automatically receives **4 randomized AWS nameservers** (`ns-*.awsdns-*.com/net/org/co.uk`) and a standard **SOA record**.
-- **Public & Private Zones**: Supports public hosted zones and private hosted zones associated with Amazon VPCs.
-- **CloudScape Details Drawer**: Click any zone to view details, metadata, and quick navigation.
+- Authentication and IAM roles are mocked.
+- Demo users and DNS records are seeded into SQLite.
+- Nameservers and DNS responses are simulated; no real DNS propagation occurs.
+- Creating or deleting a zone does not change a real domain.
+- The default deployment uses SQLite, whose filesystem is ephemeral on Render.
+- The deployed app is intended for demonstration and development, not production workloads.
 
-### 2. DNS Record Sets Management
-- **Full CRUD functionality**: View, search, create, edit, and delete records within a zone.
-- **Supported Record Types**:
-  - `A` (IPv4 addresses)
-  - `AAAA` (IPv6 addresses)
-  - `CNAME` (Canonical names)
-  - `TXT` (SPF, verification strings)
-  - `MX` (Mail exchangers with priority)
-  - `NS` (Name servers)
-  - `PTR` (Pointer records)
-  - `SRV` (Service locators)
-  - `CAA` (Certificate Authority Authorization)
-  - `SOA` (Start of Authority)
-- **Quick Create Wizard**:
-  - Subdomain input with automatic root domain appending (`api` + `.example.com.`)
-  - Multi-line textarea for multiple record values
-  - TTL presets (`60s`, `300s`, `3600s`, `86400s`)
-  - Routing policy selection (`Simple`, `Weighted`, `Latency`, `Failover`)
-- **System Protection**: Default NS and SOA records are protected against accidental deletion or breaking edits.
+## Architecture
 
-### 3. AWS Console Experience & Design
-- **Global Top Navigation Bar**:
-  - Route 53 service logo and header in authentic AWS navy (`#232f3e`).
-  - Search bar with `/` keyboard shortcut indicator.
-  - Global region badge (`Global (Route 53)`).
-  - Mocked IAM Account selector (`admin @ 1234-5678-9012` with `AdministratorAccess` role).
-  - Dark mode and light mode toggle.
-- **Collapsible Sidebar**: Grouped sections for DNS management, Health checking, DNS Firewall, and Monitoring.
-- **Flash Alerts**: Authentic AWS green success and red error notification banners.
-- **Confirmation Modals**: Type `delete` verification modal before deleting hosted zones.
-
-### 4. Bonus Capabilities
-- **Import BIND Zone Files**: Upload standard RFC 1035 `.zone` or `.txt` zone files to automatically parse and populate records.
-- **Export Formats**: One-click export to standard **BIND zone file** format or structured **JSON**.
-- **Bulk Operations**: Multi-select checkboxes to bulk delete DNS records in a single request.
-- **Dark Mode**: Complete AWS Dark Mode styling across all tables, inputs, modals, and navigation bars.
-- **Mocked Placeholder Sections**: Coming Soon landing pages for *Dashboard*, *Traffic Policies*, *Health Checks*, *Resolver*, and *Profiles*.
-
----
-
-## Database Schema
-
-```sql
--- Hosted Zones table
-CREATE TABLE hosted_zones (
-    id VARCHAR PRIMARY KEY,                  -- e.g. Z0A1B2C3D4EXAMPL
-    name VARCHAR(255) NOT NULL,              -- e.g. example.com.
-    type VARCHAR(10) NOT NULL DEFAULT 'Public', -- Public | Private
-    comment TEXT,
-    vpc_id VARCHAR(64),
-    vpc_region VARCHAR(32),
-    record_count INTEGER NOT NULL DEFAULT 2, -- Computed count
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
-);
-
--- DNS Records table
-CREATE TABLE dns_records (
-    id VARCHAR PRIMARY KEY,                  -- e.g. REC-3f9a2b1c8e
-    hosted_zone_id VARCHAR NOT NULL REFERENCES hosted_zones(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,              -- e.g. api.example.com.
-    type VARCHAR(10) NOT NULL,               -- A, AAAA, CNAME, TXT, MX, NS, etc.
-    ttl INTEGER NOT NULL DEFAULT 300,
-    values TEXT NOT NULL,                    -- JSON array: '["192.0.2.1", "192.0.2.2"]'
-    routing_policy VARCHAR(20) DEFAULT 'Simple',
-    is_system BOOLEAN NOT NULL DEFAULT 0,    -- 1 for auto-generated NS and SOA
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
-);
-
--- Mock IAM Users
-CREATE TABLE users (
-    id VARCHAR PRIMARY KEY,
-    username VARCHAR(64) UNIQUE NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    account_id VARCHAR(20) NOT NULL,
-    role VARCHAR(64) NOT NULL,
-    token VARCHAR(128)
-);
+```text
+┌──────────────────────┐       REST API       ┌──────────────────────┐
+│ Next.js + TypeScript │ ◄──────────────────► │ FastAPI + SQLAlchemy │
+│ AWS-style console    │                      │ Mock Route 53 API    │
+└──────────────────────┘                      └──────────┬───────────┘
+                                                         │
+                                                         ▼
+                                                   SQLite database
 ```
 
----
+### Technology stack
 
-## API Overview
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 14, React 18, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Uvicorn, SQLAlchemy, Pydantic |
+| Database | SQLite |
+| Deployment | Vercel (frontend), Render (backend) |
 
-### Authentication (`/api/auth`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/auth/login` | Log in and receive session token (`admin` / `password`) |
-| `GET` | `/api/auth/me` | Fetch active profile and account role |
-| `POST` | `/api/auth/logout` | Revoke session |
+## Project structure
 
-### Hosted Zones (`/api/hosted-zones`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/hosted-zones` | List zones (supports `search`, `sort_by`, `sort_order`, pagination) |
-| `POST` | `/api/hosted-zones` | Create zone with auto-provisioned NS and SOA records |
-| `GET` | `/api/hosted-zones/{id}` | Get zone details |
-| `PATCH` | `/api/hosted-zones/{id}` | Update zone description/comment |
-| `DELETE` | `/api/hosted-zones/{id}` | Delete zone and cascade delete records |
+```text
+.
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── models.py            # SQLAlchemy models
+│   ├── schemas.py           # API schemas
+│   ├── database.py          # SQLite engine and sessions
+│   ├── seed.py              # Demo data
+│   └── routers/             # Auth, hosted zones, and records
+├── frontend/
+│   └── src/
+│       ├── app/              # Next.js routes and pages
+│       ├── components/       # Reusable UI components
+│       ├── lib/              # API client
+│       └── types/            # TypeScript types
+├── render.yaml               # Render backend configuration
+└── README.md
+```
 
-### DNS Records (`/api/hosted-zones/{zone_id}/records`)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/hosted-zones/{zone_id}/records` | List records (supports `type` filter, `search`, pagination) |
-| `POST` | `/api/hosted-zones/{zone_id}/records` | Create new record set |
-| `GET` | `/api/hosted-zones/{zone_id}/records/{rec_id}` | Get single record set |
-| `PUT` | `/api/hosted-zones/{zone_id}/records/{rec_id}` | Edit record values and TTL |
-| `DELETE` | `/api/hosted-zones/{zone_id}/records/{rec_id}` | Delete record |
-| `POST` | `/api/hosted-zones/{zone_id}/records/bulk-delete` | Bulk delete multiple records |
-| `GET` | `/api/hosted-zones/{zone_id}/records/export` | Export zone (`?format=bind` or `?format=json`) |
-| `POST` | `/api/hosted-zones/{zone_id}/import` | Import RFC 1035 BIND zone file |
-
----
-
-## Quick Start / Setup Instructions
+## Quick start
 
 ### Prerequisites
-- **Python**: 3.10+ (tested on Python 3.14)
-- **Node.js**: 18+ (tested on Node v24.16.0 with npm 11+)
 
----
+- Python 3.10 or newer
+- Node.js 18 or newer
+- npm
 
-### Step 1: Start the Backend (FastAPI)
+### 1. Start the backend
 
 ```bash
 cd backend
+python -m venv .venv
 
-# Install dependencies
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+# macOS/Linux
+# source .venv/bin/activate
+
 pip install -r requirements.txt
-
-# Start the server (auto-initializes and seeds SQLite database)
 python -m uvicorn main:app --reload --port 8000
 ```
 
-The API and interactive Swagger documentation will be available at:
-- **API Base**: `http://localhost:8000`
-- **Swagger Docs**: `http://localhost:8000/docs`
+The backend is available at [http://localhost:8000](http://localhost:8000).
 
----
+- API health: `GET /api/health`
+- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### Step 2: Start the Frontend (Next.js)
+### 2. Start the frontend
 
-In a new terminal:
+In a second terminal:
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-Open your browser at:
-**[http://localhost:3000](http://localhost:3000)**
+Open [http://localhost:3000](http://localhost:3000).
 
----
+If the backend is not running on the default URL, set `NEXT_PUBLIC_API_URL` to the backend URL without a trailing slash.
 
-### Default Credentials
+## Demo credentials
 
-| Username | Password | Role | Account ID |
-| :--- | :--- | :--- | :--- |
-| `admin` | `password` | `AdministratorAccess` | `1234-5678-9012` |
-| `developer` | `password` | `PowerUserAccess` | `1234-5678-9012` |
+| Username | Password | Role |
+| --- | --- | --- |
+| `admin` | `password` | `AdministratorAccess` |
+| `developer` | `password` | `PowerUserAccess` |
 
----
+These credentials are intentionally public demo values. Do not use them for a real deployment.
 
-## Automated Verification
+## API overview
 
-To run the backend integration test suite:
+### Authentication
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/auth/login` | Create a mock session |
+| `GET` | `/api/auth/me` | Get the current mock user |
+| `POST` | `/api/auth/logout` | Revoke a mock session |
+
+### Hosted zones
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/hosted-zones` | List and search zones |
+| `POST` | `/api/hosted-zones` | Create a zone and system records |
+| `GET` | `/api/hosted-zones/{id}` | View zone details |
+| `PATCH` | `/api/hosted-zones/{id}` | Update zone metadata |
+| `DELETE` | `/api/hosted-zones/{id}` | Delete a zone and its records |
+
+### Records
+
+Record endpoints are available under `/api/hosted-zones/{zone_id}/records`, including CRUD operations, bulk deletion, BIND import, and BIND/JSON export.
+
+## Deployment
+
+### Backend on Render
+
+1. Create a Render Blueprint from this repository using `render.yaml`.
+2. Set `CORS_ORIGINS` to the deployed frontend URL.
+3. Render installs `backend/requirements.txt` and starts Uvicorn on the assigned port.
+
+The included Render configuration exposes `/api/health` as its health check. Because the default database is SQLite on an ephemeral filesystem, data should be migrated to a persistent database before production use.
+
+### Frontend on Vercel
+
+1. Import the repository into Vercel.
+2. Set the project root to `frontend`.
+3. Set `NEXT_PUBLIC_API_URL` to the deployed Render API URL.
+4. Deploy using the default Next.js settings.
+
+## Verification
+
+Run the backend verification script:
 
 ```bash
 cd backend
 python test_direct.py
 ```
 
-## Deployment
+Build the frontend:
 
-### Backend on Render
+```bash
+cd frontend
+npm run build
+```
 
-1. Create a new Render Blueprint from this repository and select `render.yaml`.
-2. Set `CORS_ORIGINS` to the Vercel deployment URL (for example,
-   `https://route53-clone.vercel.app`). Use a comma-separated list if multiple
-   frontend URLs need access.
-3. Render will build from `backend/`, expose `/api/health`, and start FastAPI
-   on Render's assigned port.
+## Contributing
 
-The current backend stores data in SQLite. Render's local filesystem is
-ephemeral, so this deployment is suitable for a demo; use a persistent
-database before production.
+Issues and pull requests are welcome. For changes, please keep the frontend and backend behavior consistent, update the relevant documentation, and verify the affected workflows locally before opening a pull request.
 
-### Frontend on Vercel
+## Disclaimer
 
-1. Import this repository into Vercel.
-2. Set the project root directory to `frontend`.
-3. Add `NEXT_PUBLIC_API_URL` with the deployed Render API URL, without a
-   trailing slash (for example, `https://route53-clone-api.onrender.com`).
-4. Deploy with the default Next.js build settings.
-
-Every push and pull request also runs the checks in
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+Amazon Route 53, AWS, and related names and trademarks belong to Amazon Web Services, Inc. This project is an independent educational implementation and is not affiliated with or endorsed by AWS.
