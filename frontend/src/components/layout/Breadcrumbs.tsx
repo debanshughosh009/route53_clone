@@ -13,19 +13,19 @@ interface BreadcrumbsProps {
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
   return (
-    <nav className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400 py-2 select-none">
+    <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 py-2.5 select-none">
       <Link href="/hosted-zones" className="hover:text-aws-blue hover:underline">
         Route 53
       </Link>
       {items.map((item, idx) => (
         <React.Fragment key={idx}>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-gray-400" />
           {item.href ? (
             <Link href={item.href} className="hover:text-aws-blue hover:underline">
               {item.label}
             </Link>
           ) : (
-            <span className="font-semibold text-gray-800 dark:text-gray-200">
+            <span className="font-semibold text-gray-800 dark:text-gray-100">
               {item.label}
             </span>
           )}
