@@ -165,19 +165,19 @@ export const RecordTable: React.FC<RecordTableProps> = ({
         {/* Filter Bar: Search + Type Selector */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
           {/* Search by record name or value */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-gray-400" />
+          <div className="relative flex-1 max-w-lg">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
             <input
               type="text"
               placeholder="Find records by name or value"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue focus:bg-white"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue focus:bg-white"
             />
             {search && (
               <button
                 onClick={() => onSearchChange("")}
-                className="absolute right-2.5 top-2 text-xs text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-2 text-xs text-gray-400 hover:text-gray-600"
               >
                 Clear
               </button>
@@ -185,11 +185,11 @@ export const RecordTable: React.FC<RecordTableProps> = ({
           </div>
 
           {/* Type filter */}
-          <div className="w-44">
+          <div className="w-52">
             <select
               value={typeFilter}
               onChange={(e) => onTypeFilterChange(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue"
+              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue"
             >
               <option value="">All record types</option>
               {["A", "AAAA", "CNAME", "TXT", "MX", "NS", "PTR", "SRV", "CAA", "SOA"].map((t) => (
@@ -204,44 +204,44 @@ export const RecordTable: React.FC<RecordTableProps> = ({
 
       {/* Table Content */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 uppercase tracking-wider font-semibold">
-              <th className="py-2.5 px-3 w-8 text-center">
+            <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wider font-bold">
+              <th className="py-3 px-3 w-10 text-center">
                 <input
                   type="checkbox"
                   checked={records.length > 0 && selectedIds.length === records.length}
                   onChange={toggleSelectAll}
-                  className="rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
+                  className="w-4 h-4 rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
                 />
               </th>
-              <th className="py-2.5 px-4">Record name</th>
-              <th className="py-2.5 px-4">Type</th>
-              <th className="py-2.5 px-4">Routing policy</th>
-              <th className="py-2.5 px-4">Value / Route traffic to</th>
-              <th className="py-2.5 px-4 text-right">TTL (Seconds)</th>
+              <th className="py-3 px-4">Record name</th>
+              <th className="py-3 px-4">Type</th>
+              <th className="py-3 px-4">Routing policy</th>
+              <th className="py-3 px-4">Value / Route traffic to</th>
+              <th className="py-3 px-4 text-right">TTL (Seconds)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {loading && records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-gray-500">
+                <td colSpan={6} className="py-10 text-center text-gray-500 text-sm">
                   Loading DNS records...
                 </td>
               </tr>
             ) : records.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-10 text-center">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <td colSpan={6} className="py-12 text-center">
+                  <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
                     No records found
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 mt-1">
                     {search || typeFilter
                       ? "No records match your filter criteria."
                       : "Create your first record set for this domain."}
                   </p>
                   {!search && !typeFilter && (
-                    <Button variant="primary" size="sm" onClick={onCreateClick} className="mt-3">
+                    <Button variant="primary" size="md" onClick={onCreateClick} className="mt-4">
                       Create record
                     </Button>
                   )}
@@ -260,31 +260,31 @@ export const RecordTable: React.FC<RecordTableProps> = ({
                         : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     }`}
                   >
-                    <td className="py-2.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelectRecord(record.id)}
-                        className="rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
+                        className="w-4 h-4 rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
                       />
                     </td>
-                    <td className="py-2.5 px-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                    <td className="py-3 px-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                       <span>{record.name}</span>
                       {record.is_system && (
                         <span title="System-managed default record">
-                          <Lock className="w-3 h-3 text-gray-400" />
+                          <Lock className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-4">
-                      <Badge variant={getTypeBadgeVariant(record.type)} size="sm">
+                    <td className="py-3 px-4">
+                      <Badge variant={getTypeBadgeVariant(record.type)} size="md">
                         {record.type}
                       </Badge>
                     </td>
-                    <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400">
+                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                       {record.routing_policy || "Simple"}
                     </td>
-                    <td className="py-2.5 px-4 font-mono text-gray-700 dark:text-gray-300 max-w-md">
+                    <td className="py-3 px-4 font-mono text-gray-800 dark:text-gray-200 max-w-md">
                       <div className="space-y-0.5">
                         {record.values.map((val, idx) => (
                           <div key={idx} className="truncate">
@@ -293,7 +293,7 @@ export const RecordTable: React.FC<RecordTableProps> = ({
                         ))}
                       </div>
                     </td>
-                    <td className="py-2.5 px-4 text-right font-medium text-gray-700 dark:text-gray-300">
+                    <td className="py-3 px-4 text-right font-medium text-gray-800 dark:text-gray-200">
                       {record.ttl}
                     </td>
                   </tr>
@@ -305,11 +305,11 @@ export const RecordTable: React.FC<RecordTableProps> = ({
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500">
+      <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500">
         <span>
           Showing 1-{records.length} of {total} records
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm" disabled>
             Previous
           </Button>

@@ -28,12 +28,8 @@ export const ComingSoon: React.FC<ComingSoonProps> = ({
           {title} &mdash; Coming Soon
         </h1>
 
-        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           {description}
-        </p>
-
-        <p className="text-[11px] text-gray-400">
-          This section is a mocked placeholder in the Route 53 console assignment.
         </p>
 
         <div className="pt-2">

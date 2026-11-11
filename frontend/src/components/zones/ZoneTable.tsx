@@ -107,19 +107,19 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
 
           {/* Search Filter Bar */}
           <div className="flex items-center gap-3 pt-2">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-gray-400" />
+            <div className="relative flex-1 max-w-lg">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Find hosted zones by name, ID, or description"
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue focus:bg-white"
+                className="w-full pl-9 pr-8 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue focus:bg-white"
               />
               {search && (
                 <button
                   onClick={() => onSearchChange("")}
-                  className="absolute right-2.5 top-2 text-xs text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-2 text-xs text-gray-400 hover:text-gray-600"
                 >
                   Clear
                 </button>
@@ -130,37 +130,37 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
 
         {/* Table Content */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 uppercase tracking-wider font-semibold">
-                <th className="py-2.5 px-3 w-8 text-center">
+              <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wider font-bold">
+                <th className="py-3 px-3 w-10 text-center">
                   <span className="sr-only">Select</span>
                 </th>
-                <th className="py-2.5 px-4">Hosted zone name</th>
-                <th className="py-2.5 px-4">Type</th>
-                <th className="py-2.5 px-4 text-center">Record count</th>
-                <th className="py-2.5 px-4">Hosted zone ID</th>
-                <th className="py-2.5 px-4">Description</th>
+                <th className="py-3 px-4">Hosted zone name</th>
+                <th className="py-3 px-4">Type</th>
+                <th className="py-3 px-4 text-center">Record count</th>
+                <th className="py-3 px-4">Hosted zone ID</th>
+                <th className="py-3 px-4">Description</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {loading && zones.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500">
+                  <td colSpan={6} className="py-10 text-center text-gray-500 text-sm">
                     Loading hosted zones...
                   </td>
                 </tr>
               ) : zones.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <td colSpan={6} className="py-12 text-center">
+                    <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
                       No hosted zones found
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 mt-1">
                       {search ? "No results match your search filter." : "Create your first hosted zone to get started."}
                     </p>
                     {!search && (
-                      <Button variant="primary" size="sm" onClick={onCreateClick} className="mt-3">
+                      <Button variant="primary" size="md" onClick={onCreateClick} className="mt-4">
                         Create hosted zone
                       </Button>
                     )}
@@ -179,50 +179,50 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
                           : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                       }`}
                     >
-                      <td className="py-2.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="radio"
                           name="selectedZone"
                           checked={isSelected}
                           onChange={() => setSelectedZoneId(zone.id)}
-                          className="text-aws-blue focus:ring-aws-blue cursor-pointer"
+                          className="w-4 h-4 text-aws-blue focus:ring-aws-blue cursor-pointer"
                         />
                       </td>
-                      <td className="py-2.5 px-4 font-semibold text-aws-blue hover:underline">
+                      <td className="py-3 px-4 font-semibold text-aws-blue hover:underline">
                         <Link
                           href={`/hosted-zones/${zone.id}`}
                           onClick={(e) => e.stopPropagation()}
                           className="flex items-center gap-1.5"
                         >
                           {zone.name}
-                          <ExternalLink className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100" />
+                          <ExternalLink className="w-3.5 h-3.5 text-gray-400 opacity-70 hover:opacity-100" />
                         </Link>
                       </td>
-                      <td className="py-2.5 px-4">
-                        <Badge variant={zone.type === "Public" ? "green" : "blue"} size="sm">
+                      <td className="py-3 px-4">
+                        <Badge variant={zone.type === "Public" ? "green" : "blue"} size="md">
                           {zone.type}
                         </Badge>
                       </td>
-                      <td className="py-2.5 px-4 text-center font-medium text-gray-700 dark:text-gray-300">
+                      <td className="py-3 px-4 text-center font-medium text-gray-800 dark:text-gray-200">
                         {zone.record_count}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-gray-600 dark:text-gray-400">
+                      <td className="py-3 px-4 font-mono text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-1.5">
                           <span>{zone.id}</span>
                           <button
                             onClick={(e) => handleCopy(zone.id, e)}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-0.5"
                             title="Copy Zone ID"
                           >
                             {copiedId === zone.id ? (
-                              <Check className="w-3 h-3 text-green-600" />
+                              <Check className="w-3.5 h-3.5 text-green-600" />
                             ) : (
-                              <Copy className="w-3 h-3" />
+                              <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 text-gray-600 dark:text-gray-400 truncate max-w-xs">
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-400 truncate max-w-xs">
                         {zone.comment || "-"}
                       </td>
                     </tr>
@@ -234,11 +234,11 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500">
+        <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500">
           <span>
             Showing 1-{zones.length} of {total} hosted zones
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" disabled>
               Previous
             </Button>
