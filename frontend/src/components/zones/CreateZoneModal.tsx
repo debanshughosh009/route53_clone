@@ -86,7 +86,7 @@ export const CreateZoneModal: React.FC<CreateZoneModalProps> = ({
           label="Domain name"
           placeholder="example.com"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={({ detail }) => setName(detail.value)}
           helperText="Enter a fully qualified domain name, such as example.com."
           required
         />
@@ -156,7 +156,7 @@ export const CreateZoneModal: React.FC<CreateZoneModalProps> = ({
               label="VPC ID"
               placeholder="vpc-0a1b2c3d4e5f6g7h8"
               value={vpcId}
-              onChange={(e) => setVpcId(e.target.value)}
+              onChange={({ detail }) => setVpcId(detail.value)}
               helperText="The VPC to associate with this private hosted zone."
               required
             />
@@ -164,7 +164,7 @@ export const CreateZoneModal: React.FC<CreateZoneModalProps> = ({
               label="VPC Region"
               placeholder="us-east-1"
               value={vpcRegion}
-              onChange={(e) => setVpcRegion(e.target.value)}
+              onChange={({ detail }) => setVpcRegion(detail.value)}
             />
           </div>
         )}

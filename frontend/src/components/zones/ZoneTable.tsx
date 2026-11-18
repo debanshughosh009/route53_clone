@@ -5,7 +5,8 @@ import Link from "next/link";
 import { HostedZone } from "@/types";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { Search, RefreshCw, Copy, Check, ExternalLink, SlidersHorizontal, Info } from "lucide-react";
+import { Search, RefreshCw, Copy, Check } from "lucide-react";
+import Table, { TableProps } from "@cloudscape-design/components/table";
 
 interface ZoneTableProps {
   zones: HostedZone[];
@@ -35,9 +36,15 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
   const [activeTab, setActiveTab] = useState<"details" | "tags">("details");
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId) || null;
+  const columns: TableProps.ColumnDefinition<HostedZone>[] = [
+    { id: "name", header: "Hosted zone name", cell: (zone) => <Link href={`/hosted-zones/${zone.id}`}>{zone.name}</Link> },
+    { id: "type", header: "Type", cell: (zone) => <Badge variant={zone.type === "Public" ? "green" : "blue"}>{zone.type}</Badge> },
+    { id: "records", header: "Record count", cell: (zone) => zone.record_count },
+    { id: "id", header: "Hosted zone ID", cell: (zone) => <span className="font-mono">{zone.id} <Button variant="link" onClick={() => handleCopy(zone.id)} aria-label="Copy hosted zone ID">{copiedId === zone.id ? <Check size={14} /> : <Copy size={14} />}</Button></span> },
+    { id: "description", header: "Description", cell: (zone) => zone.comment || "-" },
+  ];
 
-  const handleCopy = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopy = (id: string) => {
     navigator.clipboard.writeText(id);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -129,109 +136,17 @@ export const ZoneTable: React.FC<ZoneTableProps> = ({
         </div>
 
         {/* Table Content */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wider font-bold">
-                <th className="py-3 px-3 w-10 text-center">
-                  <span className="sr-only">Select</span>
-                </th>
-                <th className="py-3 px-4">Hosted zone name</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4 text-center">Record count</th>
-                <th className="py-3 px-4">Hosted zone ID</th>
-                <th className="py-3 px-4">Description</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {loading && zones.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-500 text-sm">
-                    Loading hosted zones...
-                  </td>
-                </tr>
-              ) : zones.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center">
-                    <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
-                      No hosted zones found
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {search ? "No results match your search filter." : "Create your first hosted zone to get started."}
-                    </p>
-                    {!search && (
-                      <Button variant="primary" size="md" onClick={onCreateClick} className="mt-4">
-                        Create hosted zone
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                zones.map((zone) => {
-                  const isSelected = selectedZoneId === zone.id;
-                  return (
-                    <tr
-                      key={zone.id}
-                      onClick={() => setSelectedZoneId(isSelected ? null : zone.id)}
-                      className={`cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-blue-50/70 dark:bg-blue-950/40"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
-                    >
-                      <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="radio"
-                          name="selectedZone"
-                          checked={isSelected}
-                          onChange={() => setSelectedZoneId(zone.id)}
-                          className="w-4 h-4 text-aws-blue focus:ring-aws-blue cursor-pointer"
-                        />
-                      </td>
-                      <td className="py-3 px-4 font-semibold text-aws-blue hover:underline">
-                        <Link
-                          href={`/hosted-zones/${zone.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex items-center gap-1.5"
-                        >
-                          {zone.name}
-                          <ExternalLink className="w-3.5 h-3.5 text-gray-400 opacity-70 hover:opacity-100" />
-                        </Link>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant={zone.type === "Public" ? "green" : "blue"} size="md">
-                          {zone.type}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-center font-medium text-gray-800 dark:text-gray-200">
-                        {zone.record_count}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-gray-700 dark:text-gray-300">
-                        <div className="flex items-center gap-1.5">
-                          <span>{zone.id}</span>
-                          <button
-                            onClick={(e) => handleCopy(zone.id, e)}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-0.5"
-                            title="Copy Zone ID"
-                          >
-                            {copiedId === zone.id ? (
-                              <Check className="w-3.5 h-3.5 text-green-600" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 dark:text-gray-400 truncate max-w-xs">
-                        {zone.comment || "-"}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          variant="embedded"
+          items={zones}
+          columnDefinitions={columns}
+          loading={loading}
+          loadingText="Loading hosted zones"
+          selectionType="single"
+          selectedItems={selectedZone ? [selectedZone] : []}
+          onSelectionChange={({ detail }) => setSelectedZoneId(detail.selectedItems[0]?.id ?? null)}
+          empty={<div className="p-8 text-center"><p className="font-semibold">No hosted zones found</p><p className="text-sm text-gray-500">{search ? "No results match your search filter." : "Create your first hosted zone to get started."}</p>{!search && <div className="mt-4"><Button variant="primary" onClick={onCreateClick}>Create hosted zone</Button></div>}</div>}
+        />
 
         {/* Pagination Footer */}
         <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500">

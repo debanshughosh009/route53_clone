@@ -59,7 +59,7 @@ export default function LoginPage() {
           <Input
             label="IAM username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={({ detail }) => setUsername(detail.value)}
             required
             placeholder="admin"
           />
@@ -68,7 +68,7 @@ export default function LoginPage() {
             label="Password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={({ detail }) => setPassword(detail.value)}
             required
             placeholder="••••••••"
           />

@@ -138,7 +138,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         <Select
           label="Record type"
           value={type}
-          onChange={(e) => setType(e.target.value as RecordType)}
+          onChange={({ detail }) => setType(detail.selectedOption?.value as RecordType)}
           options={RECORD_TYPES.map((t) => ({ label: t.label, value: t.value }))}
         />
 
@@ -203,7 +203,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         <Select
           label="Routing policy"
           value={routingPolicy}
-          onChange={(e) => setRoutingPolicy(e.target.value)}
+          onChange={({ detail }) => setRoutingPolicy(detail.selectedOption?.value ?? "Simple")}
           options={[
             { label: "Simple routing - routes traffic to a single resource", value: "Simple" },
             { label: "Weighted routing - routes traffic based on proportions", value: "Weighted" },

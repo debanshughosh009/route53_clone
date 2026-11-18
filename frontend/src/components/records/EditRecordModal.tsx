@@ -135,7 +135,7 @@ export const EditRecordModal: React.FC<EditRecordModalProps> = ({
         <Select
           label="Routing policy"
           value={routingPolicy}
-          onChange={(e) => setRoutingPolicy(e.target.value)}
+          onChange={({ detail }) => setRoutingPolicy(detail.selectedOption?.value ?? "Simple")}
           options={[
             { label: "Simple", value: "Simple" },
             { label: "Weighted", value: "Weighted" },

@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import { DNSRecord, RecordType } from "@/types";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { Select } from "../ui/Select";
+import Table, { TableProps } from "@cloudscape-design/components/table";
 import {
-  Search,
   RefreshCw,
   Download,
   Upload,
@@ -50,22 +52,6 @@ export const RecordTable: React.FC<RecordTableProps> = ({
 }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const toggleSelectAll = () => {
-    if (selectedIds.length === records.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(records.map((r) => r.id));
-    }
-  };
-
-  const toggleSelectRecord = (id: string) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((item) => item !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-    }
-  };
-
   const selectedRecords = records.filter((r) => selectedIds.includes(r.id));
   const canEdit = selectedRecords.length === 1 && !selectedRecords[0].is_system;
   const canDelete = selectedRecords.length > 0;
@@ -83,6 +69,14 @@ export const RecordTable: React.FC<RecordTableProps> = ({
         return "grey";
     }
   };
+
+  const columns: TableProps.ColumnDefinition<DNSRecord>[] = [
+    { id: "name", header: "Record name", cell: (record) => <span>{record.name}{record.is_system && <Lock size={14} className="inline ml-1 text-gray-400" aria-label="System managed" />}</span> },
+    { id: "type", header: "Type", cell: (record) => <Badge variant={getTypeBadgeVariant(record.type)}>{record.type}</Badge> },
+    { id: "policy", header: "Routing policy", cell: (record) => record.routing_policy || "Simple" },
+    { id: "values", header: "Value / Route traffic to", cell: (record) => <div className="font-mono">{record.values.map((value, index) => <div key={index}>{value}</div>)}</div> },
+    { id: "ttl", header: "TTL (Seconds)", cell: (record) => record.ttl },
+  ];
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded shadow-sm">
@@ -165,144 +159,24 @@ export const RecordTable: React.FC<RecordTableProps> = ({
         {/* Filter Bar: Search + Type Selector */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
           {/* Search by record name or value */}
-          <div className="relative flex-1 max-w-lg">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Find records by name or value"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue focus:bg-white"
-            />
-            {search && (
-              <button
-                onClick={() => onSearchChange("")}
-                className="absolute right-3 top-2 text-xs text-gray-400 hover:text-gray-600"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          <div className="flex-1 max-w-lg"><Input value={search} placeholder="Find records by name or value" onChange={({ detail }) => onSearchChange(detail.value)} /></div>
 
           {/* Type filter */}
-          <div className="w-52">
-            <select
-              value={typeFilter}
-              onChange={(e) => onTypeFilterChange(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-aws-blue focus:border-aws-blue"
-            >
-              <option value="">All record types</option>
-              {["A", "AAAA", "CNAME", "TXT", "MX", "NS", "PTR", "SRV", "CAA", "SOA"].map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="w-52"><Select value={typeFilter} onChange={({ detail }) => onTypeFilterChange(detail.selectedOption?.value ?? "")} options={[{ label: "All record types", value: "" }, ...["A", "AAAA", "CNAME", "TXT", "MX", "NS", "PTR", "SRV", "CAA", "SOA"].map((type) => ({ label: type, value: type }))]} /></div>
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
-          <thead>
-            <tr className="bg-aws-tableHeader dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wider font-bold">
-              <th className="py-3 px-3 w-10 text-center">
-                <input
-                  type="checkbox"
-                  checked={records.length > 0 && selectedIds.length === records.length}
-                  onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
-                />
-              </th>
-              <th className="py-3 px-4">Record name</th>
-              <th className="py-3 px-4">Type</th>
-              <th className="py-3 px-4">Routing policy</th>
-              <th className="py-3 px-4">Value / Route traffic to</th>
-              <th className="py-3 px-4 text-right">TTL (Seconds)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {loading && records.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-10 text-center text-gray-500 text-sm">
-                  Loading DNS records...
-                </td>
-              </tr>
-            ) : records.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-12 text-center">
-                  <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
-                    No records found
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {search || typeFilter
-                      ? "No records match your filter criteria."
-                      : "Create your first record set for this domain."}
-                  </p>
-                  {!search && !typeFilter && (
-                    <Button variant="primary" size="md" onClick={onCreateClick} className="mt-4">
-                      Create record
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              records.map((record) => {
-                const isSelected = selectedIds.includes(record.id);
-                return (
-                  <tr
-                    key={record.id}
-                    onClick={() => toggleSelectRecord(record.id)}
-                    className={`cursor-pointer transition-colors ${
-                      isSelected
-                        ? "bg-blue-50/70 dark:bg-blue-950/40"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                    }`}
-                  >
-                    <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelectRecord(record.id)}
-                        className="w-4 h-4 rounded text-aws-blue focus:ring-aws-blue cursor-pointer"
-                      />
-                    </td>
-                    <td className="py-3 px-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-                      <span>{record.name}</span>
-                      {record.is_system && (
-                        <span title="System-managed default record">
-                          <Lock className="w-3.5 h-3.5 text-gray-400" />
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant={getTypeBadgeVariant(record.type)} size="md">
-                        {record.type}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
-                      {record.routing_policy || "Simple"}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-gray-800 dark:text-gray-200 max-w-md">
-                      <div className="space-y-0.5">
-                        {record.values.map((val, idx) => (
-                          <div key={idx} className="truncate">
-                            {val}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-800 dark:text-gray-200">
-                      {record.ttl}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        variant="embedded"
+        items={records}
+        columnDefinitions={columns}
+        loading={loading}
+        loadingText="Loading DNS records"
+        selectionType="multi"
+        selectedItems={selectedRecords}
+        onSelectionChange={({ detail }) => setSelectedIds(detail.selectedItems.map((record) => record.id))}
+        empty={<div className="p-8 text-center"><p className="font-semibold">No records found</p><p className="text-sm text-gray-500">{search || typeFilter ? "No records match your filter criteria." : "Create your first record set for this domain."}</p>{!search && !typeFilter && <div className="mt-4"><Button variant="primary" onClick={onCreateClick}>Create record</Button></div>}</div>}
+      />
 
       {/* Pagination Footer */}
       <div className="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-sm text-gray-500">
