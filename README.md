@@ -50,6 +50,60 @@ This project does **not** connect to AWS or any real DNS provider.
 | Database | SQLite |
 | Deployment | Vercel (frontend), Render (backend) |
 
+### Database schema
+
+The backend stores data in `backend/route53.db` using SQLite and SQLAlchemy. The
+schema consists of users, hosted zones, and DNS records:
+
+```mermaid
+erDiagram
+    USERS {
+        string id PK
+        string username UK
+        string password
+        string account_id
+        string role
+        string token
+    }
+
+    HOSTED_ZONES {
+        string id PK
+        string name
+        string type
+        text comment
+        string vpc_id
+        string vpc_region
+        integer record_count
+        datetime created_at
+        datetime updated_at
+    }
+
+    DNS_RECORDS {
+        string id PK
+        string hosted_zone_id FK
+        string name
+        string type
+        integer ttl
+        text values
+        string routing_policy
+        boolean is_system
+        datetime created_at
+        datetime updated_at
+    }
+
+    HOSTED_ZONES ||--o{ DNS_RECORDS : contains
+```
+
+| Table | Description |
+| --- | --- |
+| `users` | Mock login accounts and session tokens. |
+| `hosted_zones` | Public or private DNS zones, including optional VPC metadata. |
+| `dns_records` | DNS records belonging to a hosted zone. `values` is stored as a JSON array string. |
+
+`dns_records.hosted_zone_id` references `hosted_zones.id` with cascade deletion.
+New hosted zones receive system NS and SOA records, which are marked with
+`is_system = true` and protected from ordinary deletion.
+
 ## Project structure
 
 ```text
